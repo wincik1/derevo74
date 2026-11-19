@@ -326,7 +326,6 @@ function render(){
   drawPlan(m); drawElev(m);
   chips.innerHTML=`<span class="chip">Стены ${m.per.toFixed(1)} м периметра</span><span class="chip">Утеплитель ${m.ins||'—'} мм</span><span class="chip">Уклон ${m.pitch}°</span><span class="chip">Свес ${m.ovs} м</span><span class="chip">Площадь ${m.area.toFixed(1)} м²</span>`;
   model_json=JSON.stringify(m);
-  if(typeof draw3d==='function')draw3d();
 }
 function drawPlan(m){
   const pad=40, sc=Math.min((400-pad*2)/m.L,(300-pad*2)/m.W);
@@ -387,9 +386,7 @@ function fillSizes(t,wantL,wantW){
   const wv=[2.3];for(let x=2.5;x<=t.maxW+0.001;x+=0.5)wv.push(Math.round(x*2)/2);
   mk(L_,lv,wantL);mk(W_,wv,wantW);
 }
-[L_,W_].forEach(el=>el.addEventListener('change',render));
-[H_,O_].forEach(el=>el.addEventListener('change',render));
-I_.addEventListener('change',render); P_.addEventListener('change',render);
+[L_,W_,H_,O_,I_,P_].forEach(el=>el.addEventListener('change',()=>render()));
 initTypes(); render();
 
 // ===== 3D каркас: объёмные доски, панели, разложение по слоям =====
