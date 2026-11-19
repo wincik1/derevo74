@@ -55,7 +55,13 @@ button.b{padding:11px 16px;border-radius:10px;border:1px solid var(--line);backg
 .hero{padding:6px 2px 4px}
 .hero h1{font-size:24px;line-height:1.2;margin:0 0 10px}
 .hero p{color:var(--mut);font-size:14px;line-height:1.55;margin:0}
-#c3d{width:100%;height:auto;display:block;background:linear-gradient(180deg,var(--c3bg1) 0%,var(--c3bg2) 60%);border:1px solid var(--line);border-radius:12px;touch-action:none;cursor:grab}
+.c3dcard{padding:12px}
+@media(min-width:1081px){.c3dcard{width:calc(100vw - 32px);margin-left:calc(50% - 50vw + 16px)}}
+.c3dwrap{position:relative}
+.fsBtn{position:absolute;top:10px;right:10px;padding:6px 10px;font-size:16px;opacity:.85}
+.c3dwrap:fullscreen{background:var(--bg);display:flex;align-items:center;justify-content:center}
+.c3dwrap:fullscreen #c3d{width:100vw;height:100vh;border:0;border-radius:0}
+#c3d{width:100%;height:min(82vh,calc((100vw - 56px)*0.62));min-height:360px;display:block;background:linear-gradient(180deg,var(--c3bg1) 0%,var(--c3bg2) 60%);border:1px solid var(--line);border-radius:12px;touch-action:none;cursor:grab}
 .layers{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .layers button{padding:6px 10px;border-radius:20px;border:1px solid var(--line);background:var(--chip);color:var(--mut);font-size:12px;cursor:pointer}
 .layers button.on{border-color:#c9924a;color:var(--acc);background:var(--grp)}
@@ -128,9 +134,9 @@ footer{color:var(--mut);font-size:12px;text-align:center;padding:24px 16px 40px;
   </div>
   <div id="extraOpts" style="margin-top:14px"></div>
  </div>
- <div class="card">
+ <div class="card c3dcard">
   <h2>3. Объёмная модель каркаса</h2>
-  <canvas id="c3d" width="1200" height="700"></canvas>
+  <div class="c3dwrap"><canvas id="c3d" width="1600" height="900"></canvas><button class="b fsBtn" id="fsBtn" title="На весь экран">⛶</button></div>
   <div class="layers" id="layers"></div>
   <div class="row" style="margin-top:10px;gap:12px;flex-wrap:wrap">
    <button class="b" id="explodeBtn" style="padding:8px 14px">Разложить по слоям</button>
@@ -488,17 +494,33 @@ function faces(b){
   const Q=P.map(p=>[p[0]+dx*len,p[1]+dy*len,p[2]+dz*len]);
   return [[P[0],P[1],P[2],P[3]],[Q[0],Q[1],Q[2],Q[3]],[P[0],P[1],Q[1],Q[0]],[P[1],P[2],Q[2],Q[1]],[P[2],P[3],Q[3],Q[2]],[P[3],P[0],Q[0],Q[3]]];
 }
+let FIT=0;
 function proj(p,m,lift){
   const cx=m.L/2+(m.type==='barnhouse'?1.2:0), cy=m.H/2+0.5+explode*7, cz=m.W/2;
   let x=p[0]-cx,y=p[1]+(lift||0)-cy,z=p[2]-cz;
   let x1=x*Math.cos(rotY)-z*Math.sin(rotY), z1=x*Math.sin(rotY)+z*Math.cos(rotY);
   let y1=y*Math.cos(rotX)-z1*Math.sin(rotX), z2=y*Math.sin(rotX)+z1*Math.cos(rotX);
-  const f=Math.min(C.width,C.height)/(Math.max(m.L+(m.type==='barnhouse'?2.5:0),m.W)*1.25+explode*9)*zoom;
+  const f=(FIT||Math.min(C.width,C.height)/(Math.max(m.L+(m.type==='barnhouse'?2.5:0),m.W)*1.25+explode*9))*zoom;
   const d=34, s=d/(d+z2);
-  return [C.width/2+x1*f*s, C.height/2-y1*f*s, z2, [x1,y1,z2]];
+  const ox=FIT?CX:C.width/2, oy=FIT?CY:C.height/2;
+  return [ox+x1*f*s, oy-y1*f*s, z2, [x1,y1,z2]];
 }
+function fitScale(m){
+  FIT=0;const save=zoom;zoom=1;
+  let minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
+  for(const b of beams(m)){if(!on[b.layer])continue;const pts=b.quad?b.quad:[b.a,b.b];
+    const lift=explode*ORDER[b.layer]*1.4;
+    for(const p of pts){const [x,y]=proj(p,m,lift);if(x<minx)minx=x;if(x>maxx)maxx=x;if(y<miny)miny=y;if(y>maxy)maxy=y;}}
+  zoom=save;
+  const f0=Math.min(C.width,C.height)/(Math.max(m.L+(m.type==='barnhouse'?2.5:0),m.W)*1.25+explode*9);
+  const w=maxx-minx||1,hh=maxy-miny||1;
+  const k=Math.min((C.width-40)/w,(C.height-40)/hh);
+  FIT=f0*k; CX=C.width/2-((minx+maxx)/2-C.width/2)*k; CY=C.height/2-((miny+maxy)/2-C.height/2)*k;
+}
+let CX=0,CY=0;
 function draw3d(){
   const m=model; if(!m.L) return;
+  fitScale(m);
   ctx.clearRect(0,0,C.width,C.height);
   const css=getComputedStyle(document.documentElement);ctx.strokeStyle=css.getPropertyValue('--grid').trim()||'#1c261f';ctx.lineWidth=1;
   for(let i=-3;i<=m.L+5;i+=1){const a=proj([i,-0.3,-3],m),b=proj([i,-0.3,m.W+3],m);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
@@ -533,6 +555,8 @@ EX.addEventListener('input',()=>{explode=+EX.value;draw3d();});
 document.getElementById('explodeBtn').onclick=()=>{const target=explode>0.5?0:1;const t0=performance.now(),from=explode;(function st(now){const k=Math.min(1,(now-t0)/600);explode=from+(target-from)*(1-Math.pow(1-k,3));EX.value=explode;draw3d();if(k<1)requestAnimationFrame(st);})(t0);};
 const TB=document.getElementById('themeBtn');
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);TB.textContent=t==='dark'?'☀️ Светлая':'🌙 Тёмная';draw3d();}
+document.getElementById('fsBtn').onclick=()=>{const w=document.querySelector('.c3dwrap');if(document.fullscreenElement)document.exitFullscreen();else (w.requestFullscreen||w.webkitRequestFullscreen).call(w);};
+document.addEventListener('fullscreenchange',()=>{const fs=!!document.fullscreenElement;C.width=fs?Math.round(screen.width*1.2):1600;C.height=fs?Math.round(screen.height*1.2):900;draw3d();});
 TB.onclick=()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 TB.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️ Светлая':'🌙 Тёмная';
 document.getElementById('allBtn').onclick=()=>{const all=Object.values(on).every(v=>v);Object.keys(on).forEach(k=>on[k]=all?0:1);if(all){on.rost=on.floor=on.plat=on.walls=on.open=on.raft=1;}buildLayers();draw3d();};
