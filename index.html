@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Конструктор каркасного дома — расчёт материалов</title>
+<meta name="description" content="Онлайн-конструктор каркасного дома, бани, хозблока и беседки: размеры, утепление, ведомость материалов и смета.">
+<style>
+:root{--bg:#f3f1ea;--card:#ffffff;--line:#e2ddd0;--acc:#b8761c;--acc2:#4e8a3a;--txt:#1d1a14;--mut:#6b675c;--inp:#faf8f2;--chip:#f6f3ec;--grp:#f1ead9;--c3bg1:#dfe8ee;--c3bg2:#eef1e8;--grid:#cfd6cc;--c3txt:#4a5a4f;--hdr1:#ffffff;--hdr2:#f3f1ea}
+[data-theme="dark"]{--bg:#0f1512;--card:#172019;--line:#2a372c;--acc:#d9a441;--acc2:#8fbf6a;--txt:#e8efe6;--mut:#9fb09c;--inp:#0e1410;--chip:#131a14;--grp:#1d261c;--c3bg1:#1a2430;--c3bg2:#0b0f0c;--grid:#1c261f;--c3txt:#9fb09c;--hdr1:#1b241b;--hdr2:#0f1512}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--txt)}
+header{padding:18px 16px;background:linear-gradient(180deg,var(--hdr1),var(--hdr2));border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+h1{font-size:19px;margin:0 0 4px}
+.sub{color:var(--mut);font-size:13px}
+.wrap{max-width:1080px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+h2{font-size:15px;margin:0 0 12px;color:var(--acc);text-transform:uppercase;letter-spacing:.06em}
+.types{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.type{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--chip);cursor:pointer;text-align:center;transition:.15s}
+.type:hover{border-color:var(--acc)}
+.type.on{border-color:var(--acc);background:var(--grp)}
+.type b{display:block;font-size:14px}
+.type span{font-size:11px;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+label{display:block;font-size:12px;color:var(--mut);margin-bottom:4px}
+input,select{width:100%;padding:9px 10px;background:var(--inp);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-size:14px}
+input[type=range]{padding:0}
+.row{display:flex;align-items:center;gap:10px}
+.row input[type=range]{flex:1}
+.val{min-width:74px;text-align:right;font-size:14px;color:var(--acc);font-variant-numeric:tabular-nums}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1;min-width:70px;padding:9px;background:var(--inp);border:1px solid var(--line);color:var(--txt);border-radius:9px;cursor:pointer;font-size:13px}
+.seg button.on{border-color:var(--acc);color:var(--acc);background:var(--grp)}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;text-align:center}
+.stat{background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat b{display:block;font-size:21px;color:var(--acc)}
+.stat span{font-size:11px;color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 6px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.grp td{background:var(--grp);color:var(--acc);font-weight:600}
+.scroll{overflow-x:auto}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button.a{padding:11px 16px;border-radius:10px;border:1px solid var(--acc);background:var(--acc);color:#1a1206;font-weight:600;cursor:pointer;font-size:14px}
+button.b{padding:11px 16px;border-radius:10px;border:1px solid var(--line);background:var(--chip);color:var(--txt);cursor:pointer;font-size:14px}
+.note{font-size:12px;color:var(--mut);margin-top:10px;line-height:1.5}
+#plan,#elev{width:100%;height:auto;background:var(--inp);border:1px solid var(--line);border-radius:12px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{background:var(--chip);border:1px solid var(--line);border-radius:20px;padding:6px 11px;font-size:12px;color:var(--mut)}
+@media print{.noprint{display:none}body{background:#fff;color:#111}.card{border-color:#ccc;background:#fff}.stat b{color:#111}th,td{border-color:#ddd}}
+
+.brand{font-size:22px;font-weight:700;letter-spacing:.02em;color:var(--acc);padding-top:4px}
+.hero{padding:6px 2px 4px}
+.hero h1{font-size:24px;line-height:1.2;margin:0 0 10px}
+.hero p{color:var(--mut);font-size:14px;line-height:1.55;margin:0}
+#c3d{width:100%;height:auto;display:block;background:linear-gradient(180deg,var(--c3bg1) 0%,var(--c3bg2) 60%);border:1px solid var(--line);border-radius:12px;touch-action:none;cursor:grab}
+.layers{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.layers button{padding:6px 10px;border-radius:20px;border:1px solid var(--line);background:var(--chip);color:var(--mut);font-size:12px;cursor:pointer}
+.layers button.on{border-color:#c9924a;color:var(--acc);background:var(--grp)}
+.docs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.doc{background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:14px}
+.doc b{display:block;margin-bottom:6px}
+.doc p{font-size:12px;color:var(--mut);margin:0 0 10px;line-height:1.5}
+.doc small{color:var(--acc);font-size:11px}
+.list{margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:var(--txt)}
+.list li{margin-bottom:6px}
+.goods{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.good{display:flex;justify-content:space-between;align-items:center;background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px}
+.good span{color:var(--acc);white-space:nowrap}
+.good i{font-style:normal;font-size:10px;color:var(--acc2);display:block}
+footer{color:var(--mut);font-size:12px;text-align:center;padding:24px 16px 40px;line-height:1.7}
+
+.socials{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.soc{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;font-weight:600;font-size:14px;text-decoration:none;color:#fff;transition:.15s;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.soc:hover{transform:translateY(-2px);filter:brightness(1.1)}
+.soc.vk{background:linear-gradient(135deg,#0077ff,#0a5ad6)}
+.soc.tg{background:linear-gradient(135deg,#2aabee,#1e88c9)}
+.soc.mx{background:linear-gradient(135deg,#6b4cf5,#4a2fd0)}
+.soc.vk{flex:1 1 100%;justify-content:center;max-width:420px}
+@media(max-width:480px){.soc{flex:1;justify-content:center}.soc.vk{max-width:none}}
+</style>
+</head>
+<body>
+<header>
+ <div class="wrap" style="padding:0 16px 10px">
+  <div class="row" style="justify-content:space-between"><div class="brand">🌲 Деревянные решения</div><button class="b" id="themeBtn" style="padding:8px 12px;font-size:13px">🌙 Тёмная</button></div>
+ </div>
+</header>
+<div class="wrap">
+ <div class="hero">
+  <h1>Конструктор каркасного дома: расчёт материалов по ценам склада</h1>
+  <div class="socials">
+   <a class="soc vk" href="https://vk.ru/derevyannyye_resheniya74" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12.8 18.6c-6.1 0-9.6-4.2-9.7-11.2h3.1c.1 5.1 2.4 7.3 4.2 7.7V7.4h2.9v4.4c1.8-.2 3.6-2.2 4.2-4.4h2.9c-.5 2.7-2.5 4.7-3.9 5.5 1.4.7 3.7 2.4 4.6 5.7h-3.2c-.7-2.2-2.4-3.9-4.6-4.1v4.1h-.5z"/></svg>
+    <span>Наша группа ВКонтакте</span>
+   </a>
+   <a class="soc tg" href="https://t.me/Vadim_Gnevyshev" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M9.4 15.9l-.4 4.3c.6 0 .8-.2 1.1-.5l2.6-2.5 5.4 4c1 .5 1.7.3 2-.9l3.6-16.8c.3-1.5-.5-2.1-1.5-1.7L1.6 9.9c-1.4.6-1.4 1.4-.3 1.7l5.4 1.7L19.2 5.4c.6-.4 1.1-.2.7.2L9.4 15.9z"/></svg>
+    <span>Написать в Telegram</span>
+   </a>
+   <a class="soc mx" href="https://max.ru/u/f9LHodD0cOJMQwnl5rdbnMEsQclZDMsBOMlkIRk1uIK03Ym7hOZPKyyYBKI" target="_blank" rel="noopener"><span>Написать в MAX</span></a>
+  </div>
+ </div>
+</div>
+<div class="wrap">
+ <div class="card noprint">
+  <h2>1. Тип постройки</h2>
+  <div class="types" id="types"></div>
+ </div>
+ <div class="card noprint">
+  <h2>2. Размеры и материалы</h2>
+  <div class="grid">
+   <div><label>Длина, м</label><select id="len"></select></div>
+   <div><label>Ширина (пролёт), м</label><select id="wid"></select></div>
+   <div><label>Высота стен, м</label><select id="hgt"><option value="2.2">2.2 м</option><option value="2.3">2.3 м</option><option value="2.4">2.4 м</option><option value="2.5">2.5 м</option><option value="2.6">2.6 м</option><option value="2.7" selected>2.7 м</option><option value="2.8">2.8 м</option><option value="2.9">2.9 м</option><option value="3.0">3.0 м</option><option value="3.1">3.1 м</option><option value="3.2">3.2 м</option></select><span id="hgtV" hidden></span></div>
+   <div><label>Утеплитель</label><select id="ins">
+     <option value="150">150 мм — 45×140</option>
+     <option value="200" selected>200 мм — 45×190</option>
+     <option value="250">250 мм — 45×240</option>
+     <option value="0">без утепления (хозблок)</option>
+   </select></div>
+   <div><label>Уклон крыши</label><select id="pitch">
+     <option value="20">20°</option><option value="25">25°</option><option value="30" selected>30°</option><option value="35">35°</option><option value="40">40°</option>
+   </select></div>
+   <div><label>Свес крыши, м</label><select id="ovs"><option value="0.0">0.0 м</option><option value="0.1">0.1 м</option><option value="0.2">0.2 м</option><option value="0.3">0.3 м</option><option value="0.4" selected>0.4 м</option><option value="0.5">0.5 м</option><option value="0.6">0.6 м</option></select><span id="ovsV" hidden></span></div>
+  </div>
+  <div id="extraOpts" style="margin-top:14px"></div>
+ </div>
+ <div class="card">
+  <h2>3. Объёмная модель каркаса</h2>
+  <canvas id="c3d" width="1200" height="700"></canvas>
+  <div class="layers" id="layers"></div>
+  <div class="row" style="margin-top:10px;gap:12px;flex-wrap:wrap">
+   <button class="b" id="explodeBtn" style="padding:8px 14px">Разложить по слоям</button>
+   <input type="range" id="explode" min="0" max="1" step="0.02" value="0" style="flex:1;min-width:140px">
+   <button class="b" id="allBtn" style="padding:8px 14px">Все слои</button>
+  </div>
+  <div class="note">Тяните модель пальцем или мышью в любую сторону — крутится вокруг и вверх-вниз, колесо — масштаб. Слои включаются по одному, «Разложить по слоям» поднимает каждый этап над предыдущим.</div>
+ </div>
+ <div class="card">
+  <h2>4. Смета материалов</h2>
+  <div class="summary" id="sum"></div>
+  <div class="scroll" style="margin-top:16px"><table id="tbl"></table></div>
+  <div class="note" id="footNote"></div>
+  <div class="btns noprint">
+   <button class="a" onclick="window.print()">Сохранить / печать</button>
+   <button class="b" onclick="dlCSV()">Скачать CSV (Excel)</button>
+   <button class="b" onclick="dlJSON()">Скачать модель (JSON)</button>
+  </div>
+ </div>
+ <div class="card">
+  <h2>5. Чертежи</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+   <div><div class="note" style="margin:0 0 6px">План</div><svg id="plan" viewBox="0 0 400 300"></svg></div>
+   <div><div class="note" style="margin:0 0 6px">Фасад</div><svg id="elev" viewBox="0 0 400 300"></svg></div>
+  </div>
+  <div class="chips" id="chips"></div>
+ </div>
+
+ 
+
+ <div class="card">
+  <h2>Материал для дома — со склада</h2>
+  <div class="goods">
+   <div class="good">Доска сухая строганая на каркас<span>от 27 400 ₽/м³<i>в наличии</i></span></div>
+   <div class="good">Доска обрезная 50×150×6000<span>от 12 500 ₽/м³<i>в наличии</i></span></div>
+   <div class="good">Сухой брус строганый<span>от 31 200 ₽/м³<i>в наличии</i></span></div>
+   <div class="good">Клеёный брус<span>от 63 300 ₽/м³<i>в наличии</i></span></div>
+   <div class="good">Имитация бруса<span>от 393 ₽/м²<i>в наличии</i></span></div>
+   <div class="good">Планкен из лиственницы<span>от 850 ₽/м²<i>в наличии</i></span></div>
+   <div class="good">Вагонка штиль<span>от 300 ₽/м²<i>в наличии</i></span></div>
+   <div class="good">Половая доска из лиственницы<span>от 1 240 ₽/м²<i>в наличии</i></span></div>
+  </div>
+ </div>
+
+ <div class="card">
+  <h2>По какой схеме считает конструктор</h2>
+  <ul class="list">
+   <li><b>Барнхаус</b> — терраса 2,5 м с торца под общей крышей, стена 2,7 м, крыша 35°. Стропила опираются на коньковый прогон из клеёного бруса 90×300 на стойках 140×140.</li>
+   <li><b>Классический дом</b> — одноэтажный, двускатная крыша, холодный чердак, конёк вдоль длинной стороны.</li>
+   <li><b>Баня</b> — стена 2,4 м, холодный чердак; парилка и моечная — вагонка липа, полок в два яруса.</li>
+   <li><b>Хозблок</b> — сарай, мастерская или бытовка, стена 2,4 м, стойки 45×140 с запасом под утепление.</li>
+   <li><b>Беседка</b> — сваи через 2 м, обвязка 150×150, лаги 45×190 через 600 мм, настил из палубной доски, стойки 140×140.</li>
+   <li><b>Фундамент</b> — сваи с шагом до 2 м и ростверк из трёх досок 45×190 на ребро. Сваи в расчёт не входят.</li>
+   <li><b>Пол и перекрытие</b> — балки через 600 мм: 45×190 при пролёте до 3 м, 45×240 — до 4 м; шире — несущая перегородка.</li>
+   <li><b>Стены</b> — стойки 45×140, 45×190 или 45×240 под утеплитель 150, 200 или 250 мм через 600 мм; нижняя обвязка в одну доску, верхняя в две.</li>
+   <li><b>Кровля</b> — двускатная, уклон 20–40°, стропила 45×190 через 600 мм, свес 40 см. Обрешётка — брусок 40×50 и доска 20×90.</li>
+   <li><b>Фасад</b> — планкен 20×140 по бруску подсистемы 40×50; обшивка ОСБ-3 12 мм по желанию.</li>
+  </ul>
+ </div>
+ <footer>Деревянные решения · конструктор каркасных домов · это ориентир по типовой схеме, а не проект</footer>
+</div>
+<script>
+(function(){const t=localStorage.getItem("theme")||"light";document.documentElement.setAttribute("data-theme",t);})();
+
+const TYPES = {
+  barnhouse:{name:'Барнхаус',desc:'Второй свет, антресоль, терраса',len:7,wid:10,hgt:2.7,ins:200,pitch:35,maxL:14,maxW:10,terrace:true},
+  classic:{name:'Классический дом',desc:'Одноэтажный, двускатная крыша',len:8,wid:6,hgt:2.7,ins:200,pitch:30,maxL:14,maxW:9,terrace:false},
+  bath:{name:'Баня',desc:'Парилка, моечная, отдых',len:5,wid:4,hgt:2.4,ins:150,pitch:30,maxL:8,maxW:6,terrace:false},
+  shed:{name:'Хозблок',desc:'Сарай, мастерская, бытовка',len:4,wid:3,hgt:2.4,ins:0,pitch:25,maxL:8,maxW:5,terrace:false},
+  gazebo:{name:'Беседка',desc:'Открытая, брус, настил',len:4,wid:4,hgt:2.5,ins:0,pitch:25,maxL:8,maxW:6,terrace:false}
+};
+const PRICE = {'45x140':1100,'45x190':1520,'45x240':2350,'45x90':740,'20x90':400,'20x140':650,'32x140':1200,
+  'ply18':1300,'osb12':750,'bat40x50':210,'glue140':7444,'glue90x300':10255,'glue150':9200,'wool':420,'mem':260};
+const SEC = {0:'45x140',150:'45x140',200:'45x190',250:'45x240'};
+let type='barnhouse', rows=[], model={};
+
+function fmt(n){return n.toLocaleString('ru-RU');}
+function m3(v){return (Math.round(v*100)/100).toFixed(2);}
+
+function calc(){
+  const L=+L_.value, W=+W_.value, H=+H_.value, ins=+I_.value, pitch=+P_.value, ovs=+O_.value;
+  const T=TYPES[type];
+  const per=(L+W)*2, area=L*W;
+  const wallSect=SEC[ins];
+  const span=W; // пролёт балок
+  const floorSect = span<=3?'45x190': span<=4?'45x240':'45x240';
+  const spanWarn = span>4;
+  const rows=[];
+  const add=(stage,name,spec,qty,m3v,priceKey,unit)=>rows.push({stage,name,spec,qty:Math.ceil(qty*100)/100,m3:m3v||0,price:PRICE[priceKey]||0,unit});
+  const boards=(total,len)=>Math.ceil(total/len);
+
+  if(type==='gazebo'){
+    const pileStep=2, pileN=Math.ceil(L/pileStep)+1;
+    add('Сваи и обвязка','Брус 150×150 импрегнированный','150×150×6000',pileN*(Math.ceil(W/pileStep)+1), (pileN*(Math.ceil(W/pileStep)+1))*0.15*0.15*6,'glue150');
+    add('Настил','Палубная доска','32×140×6000',boards(area*1.03,6),(boards(area*1.03,6))*0.032*0.14*6,'32x140');
+    add('Лаги','Доска 45×190','45×190×6000',boards(W*(Math.ceil(L/0.6)+1),6),(boards(W*(Math.ceil(L/0.6)+1),6))*0.045*0.19*6,'45x190');
+    const perN=Math.ceil(L/2);
+    add('Стойки','Брус 140×140','140×140×6000',perN*2,(perN*2)*0.14*0.14*6,'glue140');
+    add('Верхняя обвязка','Брус 90×140','90×140×6000',boards(per*2/6,6),(boards(per*2/6,6))*0.09*0.14*6,'glue140');
+    const gh=W/2+ovs, gr=Math.sqrt(gh*gh+(W/2*Math.tan(pitch*Math.PI/180))**2), gn=(Math.ceil(L/0.6)+1)*2;
+    add('Стропила','Доска 45×190','45×190×6000',boards(gn*gr,6),(boards(gn*gr,6))*0.045*0.19*6,'45x190');
+    add('Обрешётка','Брусок 40×50','40×50×3000',boards(area*2*1.1,3),(boards(area*2*1.1,3))*0.04*0.05*3,'bat40x50');
+    add('Перила','Доска 45×90','45×90×6000',boards(per,6),(boards(per,6))*0.045*0.09*6,'45x90');
+    return finish(rows,{L,W,H,area,per,ins,pitch,ovs,type,spanWarn});
+  }
+
+  // 1 Ростверк: 3 доски 45x190 на ребро по периметру
+  const rostV = 3*per*0.045*0.19;
+  add('01 Ростверк','Доска 45×190','45×190×6000',boards(per*3,6),rostV,'45x190');
+  // 2 Перекрытие пола: балки через 0.6
+  const beams = Math.ceil(L/0.6)+1;
+  const beamV = beams*W*0.045*(floorSect==='45x190'?0.19:0.24);
+  add('02 Перекрытие пола','Доска '+floorSect.replace('x','×'),floorSect+'×6000',boards(beams*W,6),beamV,floorSect);
+  // 3 Черновой пол
+  const plyN = Math.ceil(area*1.03/(1.525*1.525));
+  add('03 Черновой пол','Фанера ФК 18 мм','1525×1525',plyN,0,'ply18');
+  // 4 Стены: стойки + обвязки
+  const studs = Math.ceil(per/0.6);
+  const studV = studs*H*0.045*(ins===250?0.24:ins===200?0.19:ins===150?0.14:0.14);
+  add('05 Стены и перегородки','Доска '+wallSect.replace('x','×')+' (стойки)',wallSect+'×6000',studs,studV,wallSect);
+  const plates = boards(per*3,6);
+  add('05 Стены и перегородки','Доска '+wallSect.replace('x','×')+' (обвязки)',wallSect+'×6000',plates,plates*0.045*(ins===250?0.24:ins===200?0.19:ins===150?0.14:0.14)*6,wallSect);
+  // 6 Окна и двери — рамы
+  const winN = Math.max(2,Math.round(per/7)), doorN=1;
+  const frameV = (winN+doorN)*H*0.045*0.14;
+  add('06 Окна и двери','Доска 45×140 (рамы)','45×140×6000',winN+doorN,frameV,'45x140');
+  // 7 Обшивка стен ОСБ
+  const osbArea = per*H*1.03;
+  add('07 Обшивка стен','ОСБ-3 12 мм','1220×2440',Math.ceil(osbArea/(1.22*2.44)),0,'osb12');
+  // 8 Крыша: стропила
+  const half=W/2, rise=half*Math.tan(pitch*Math.PI/180);
+  const rafterLen=Math.sqrt((half+ovs)**2+rise**2);
+  const raftN=Math.ceil(L/0.6)+1;
+  add('08 Стропила и конёк','Доска 45×190','45×190×6000',boards(raftN*rafterLen,6),boards(raftN*rafterLen,6)*0.045*0.19*6,'45x190');
+  if(W>=5){add('08 Стропила и конёк','Клеёный брус 90×300 (конёк)','90×300×6000',boards(L+2*ovs,6),boards(L+2*ovs,6)*0.09*0.30*6,'glue90x300');
+  add('08 Стропила и конёк','Клеёный брус 140×140 (стропильные стойки)','140×140×6000',Math.max(2,Math.ceil(L/4.5)+1),Math.max(2,Math.ceil(L/4.5)+1)*0.14*0.14*6,'glue140');}
+  else add('08 Стропила и конёк','Доска 45×190 (коньковая)','45×190×6000',boards(L+2*ovs,6),boards(L+2*ovs,6)*0.045*0.19*6,'45x190');
+  // 9 Обрешётка
+  const batLen = raftN*rafterLen*2;
+  add('09 Обрешётка','Брусок 40×50','40×50×3000',boards(batLen*1.15,3),boards(batLen*1.15,3)*0.04*0.05*3,'bat40x50');
+  add('09 Обрешётка','Доска 20×90','20×90×6000',boards(batLen*1.15,6),boards(batLen*1.15,6)*0.02*0.09*6,'20x90');
+  // 10 Утеплитель
+  if(ins>0){
+    const woolArea = per*H + area + area;
+    add('10 Утеплитель','Вата '+ins+' мм','плиты',Math.ceil(woolArea/3),0,'wool');
+    add('10 Утеплитель','Пароизоляция','60 м²/рулон',Math.ceil(per*H/60),0,'mem');
+  }
+  // 11 Фасад
+  const rowsF = Math.ceil(H/0.14);
+  const plankLen = per*rowsF*1.03;
+  add('11 Фасад','Планкен 20×140','20×140×6000',boards(plankLen,6),boards(plankLen,6)*0.02*0.14*6,'20x140');
+  add('11 Фасад','Брусок 40×50 (подсистема)','40×50×3000',boards(per*Math.ceil(H/0.6),3),boards(per*Math.ceil(H/0.6),3)*0.04*0.05*3,'bat40x50');
+  // 12 Терраса (барнхаус)
+  if(T.terrace){
+    const tW=2.5;
+    add('12 Терраса','Палубная доска 32×140','32×140×6000',boards(tW*L*1.03,6),boards(tW*L*1.03,6)*0.032*0.14*6,'32x140');
+    add('12 Терраса','Доска 45×190 (балки)','45×190×6000',boards(tW*(Math.ceil(L/0.6)+1),6),boards(tW*(Math.ceil(L/0.6)+1),6)*0.045*0.19*6,'45x190');
+    add('12 Терраса','Клеёный брус 140×140 (опоры)','140×140×6000',3,3*0.14*0.14*6,'glue140');
+  }
+  return finish(rows,{L,W,H,area,per,ins,pitch,ovs,type,spanWarn});
+}
+
+function finish(rows,m){
+  let total=0, totalM3=0, count=0;
+  rows.forEach(r=>{r.sum=Math.round(r.qty*r.price); total+=r.sum; if(r.m3) totalM3+=r.m3; count+=r.qty;});
+  m.total=total; m.totalM3=totalM3; m.count=count; m.rows=rows;
+  return m;
+}
+
+function render(){
+  const t=TYPES[type];
+  fillSizes(t);
+  model=calc();
+  ['L_','W_','H_','O_'].forEach(k=>{});
+  
+  const m=model;
+  sum.innerHTML=`<div class="stat"><b>${fmt(m.total)} ₽</b><span>материал, силовой каркас</span></div>
+  <div class="stat"><b>${m.totalM3.toFixed(2)} м³</b><span>объём пиломатериала</span></div>
+  <div class="stat"><b>${m.count}</b><span>шт. всего</span></div>
+  <div class="stat"><b>${m.area.toFixed(1)} м²</b><span>площадь</span></div>
+  <div class="stat"><b>${TYPES[type].name}</b><span>${m.L}×${m.W} м</span></div>`;
+  // table
+  let html='<table><thead><tr><th>Этап / материал</th><th>Кол-во</th><th class="n">м³</th><th class="n">Цена</th><th class="n">Сумма</th></tr></thead><tbody>';
+  let last='';
+  m.rows.forEach(r=>{
+    if(r.stage!==last){html+=`<tr class="grp"><td colspan="5">${r.stage}</td></tr>`;last=r.stage;}
+    html+=`<tr><td>${r.name}<br><span style="color:var(--mut);font-size:11px">${r.spec}</span></td><td>${fmt(r.qty)}</td><td class="n">${r.m3?m3(r.m3):'—'}</td><td class="n">${fmt(r.price)} ₽</td><td class="n">${fmt(r.sum)} ₽</td></tr>`;
+  });
+  html+=`</tbody></table>`;
+  tbl.innerHTML=html;
+  footNote.innerHTML = `Это цена <b>материала</b> на силовой каркас, не дома под ключ. Не входят: сваи, кровельное покрытие, окна и двери, крепёж и работа. Объём посчитан с запасом 3% на подрезку.`+
+    (m.spanWarn?` <b style="color:#e0a04a">Пролёт ${m.W} м — балки 45×240 держат до 4 м, проверьте узел опирания.</b>`:'');
+  drawPlan(m); drawElev(m);
+  chips.innerHTML=`<span class="chip">Стены ${m.per.toFixed(1)} м периметра</span><span class="chip">Утеплитель ${m.ins||'—'} мм</span><span class="chip">Уклон ${m.pitch}°</span><span class="chip">Свес ${m.ovs} м</span><span class="chip">Площадь ${m.area.toFixed(1)} м²</span>`;
+  model_json=JSON.stringify(m);
+}
+function drawPlan(m){
+  const pad=40, sc=Math.min((400-pad*2)/m.L,(300-pad*2)/m.W);
+  const x0=200-m.L*sc/2, y0=170-m.W*sc/2;
+  let s=`<rect x="${x0}" y="${y0}" width="${m.L*sc}" height="${m.W*sc}" fill="var(--grp)" stroke="var(--acc)" stroke-width="3"/>`;
+  // перегородки
+  s+=`<line x1="${x0+m.L*sc/2}" y1="${y0}" x2="${x0+m.L*sc/2}" y2="${y0+m.W*sc}" stroke="#6f8a63" stroke-width="2" stroke-dasharray="6 4"/>`;
+  // окна
+  const nw=Math.max(2,Math.round(m.per/7));
+  for(let i=0;i<nw;i++){
+    const t=i/nw, x=x0+t*m.L*sc, w=Math.min(14,m.L*sc/nw*0.5);
+    s+=`<rect x="${x}" y="${y0-2}" width="${w}" height="4" fill="#9fd3ff"/>`;
+  }
+  s+=`<text x="${x0}" y="${y0+m.W*sc+18}" fill="var(--mut)" font-size="11">${m.L} м</text>`;
+  s+=`<text x="${x0-8}" y="${y0+m.W*sc/2}" fill="var(--mut)" font-size="11" transform="rotate(-90 ${x0-8} ${y0+m.W*sc/2})">${m.W} м</text>`;
+  s+=`<text x="16" y="24" fill="var(--txt)" font-size="12">План</text>`;
+  plan.innerHTML=s;
+}
+function drawElev(m){
+  const half=m.W/2, rise=half*Math.tan(m.pitch*Math.PI/180);
+  const sc=Math.min(300/(m.W+2*m.ovs), 210/(half+m.ovs+rise));
+  const cx=200, base=255;
+  const w=(m.W+2*m.ovs)*sc, r=(half+m.ovs)*sc, h=m.H*sc, rr=rise*sc;
+  let s=`<rect x="${cx-w/2}" y="${base-h}" width="${w}" height="${h}" fill="var(--grp)" stroke="var(--acc)" stroke-width="2"/>`;
+  s+=`<path d="M ${cx-w/2-10} ${base-h} L ${cx} ${base-h-rr} L ${cx+w/2+10} ${base-h}" fill="none" stroke="#8fbf6a" stroke-width="3"/>`;
+  for(let i=1;i<3;i++){const x=cx-w/2+w*i/3;s+=`<rect x="${x-6}" y="${base-h*0.55}" width="12" height="${h*0.28}" fill="#9fd3ff"/>`;}
+  s+=`<text x="${cx-w/2}" y="${base+16}" fill="var(--mut)" font-size="11">${m.W} м</text>`;
+  s+=`<text x="${cx-w/2}" y="${base-h-rr-8}" fill="var(--mut)" font-size="11">${m.pitch}°</text>`;
+  s+=`<text x="16" y="24" fill="var(--txt)" font-size="12">Фасад</text>`;
+  elev.innerHTML=s;
+}
+function dlCSV(){
+  let s='Этап;Материал;Спецификация;Кол-во;м3;Цена, руб;Сумма, руб\n';
+  model.rows.forEach(r=>{s+=`"${r.stage}";"${r.name}";"${r.spec}";${fmt(r.qty)};${m3(r.m3)};${r.price};${fmt(r.sum)}\n`;});
+  s+=`Итого;;;;${m3(model.totalM3)};;${fmt(model.total)}\n`;
+  const b=new Blob(['\ufeff'+s],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='smeta.csv';a.click();
+}
+function dlJSON(){
+  const b=new Blob([JSON.stringify(model,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='model.json';a.click();
+}
+function initTypes(){
+  types.innerHTML=Object.entries(TYPES).map(([k,v])=>`<div class="type${k===type?' on':''}" data-k="${k}"><b>${v.name}</b><span>${v.desc}</span></div>`).join('');
+  types.querySelectorAll('.type').forEach(el=>el.onclick=()=>{
+    type=el.dataset.k; const t=TYPES[type];
+    fillSizes(t,t.len,t.wid);H_.value=t.hgt;I_.value=t.ins;P_.value=t.pitch;
+    initTypes(); render();
+  });
+}
+const L_=document.getElementById('len'),W_=document.getElementById('wid'),H_=document.getElementById('hgt'),
+ I_=document.getElementById('ins'),P_=document.getElementById('pitch'),O_=document.getElementById('ovs');
+let model_json='';
+function fillSizes(t,wantL,wantW){
+  const mk=(sel,vals,want)=>{const cur=want!=null?want:(sel.options.length?+sel.value:(sel===L_?t.len:t.wid));const v=vals.includes(cur)?cur:vals.reduce((a,b)=>Math.abs(b-cur)<Math.abs(a-cur)?b:a);
+    sel.innerHTML=vals.map(x=>`<option value="${x}"${x===v?' selected':''}>${String(x).replace('.',',')} м</option>`).join('');};
+  const lv=[];for(let x=2;x<=t.maxL+0.001;x+=0.5)lv.push(Math.round(x*2)/2);
+  const wv=[2.3];for(let x=2.5;x<=t.maxW+0.001;x+=0.5)wv.push(Math.round(x*2)/2);
+  mk(L_,lv,wantL);mk(W_,wv,wantW);
+}
+[L_,W_].forEach(el=>el.addEventListener('change',render));
+[H_,O_].forEach(el=>el.addEventListener('change',render));
+I_.addEventListener('change',render); P_.addEventListener('change',render);
+initTypes(); render();
+
+// ===== 3D каркас: объёмные доски, панели, разложение по слоям =====
+const C=document.getElementById('c3d'), ctx=C.getContext('2d');
+let rotY=-0.7, rotX=0.42, zoom=1, drag=null, explode=0;
+const LAYERS=[['rost','Ростверк'],['floor','Перекрытие'],['plat','Платформа'],['ter','Терраса'],['walls','Стены'],['open','Проёмы'],['ceil','Потолок'],['raft','Стропила'],['bat','Обрешётка'],['osb','Обшивка'],['ins','Утеплитель'],['fac','Обсадка (фасад)']];
+const ORDER=Object.fromEntries(LAYERS.map(([k],i)=>[k,i]));
+const WOOD={rost:[150,96,52],floor:[196,150,92],plat:[214,196,150],ter:[170,118,66],walls:[222,186,125],open:[160,120,70],ceil:[200,160,100],raft:[205,160,100],bat:[186,142,86],osb:[203,176,118],ins:[236,214,120],fac:[160,112,64]};
+let on={rost:1,floor:1,plat:1,ter:1,walls:1,open:1,ceil:1,raft:1,bat:1,osb:1,ins:1,fac:1};
+function buildLayers(){
+  layers.innerHTML=LAYERS.map(([k,n])=>`<button class="${on[k]?'on':''}" data-k="${k}">${n}</button>`).join('');
+  layers.querySelectorAll('button').forEach(b=>b.onclick=()=>{on[b.dataset.k]^=1;buildLayers();draw3d();});
+}
+function beams(m){
+  const B=[], L=m.L, W=m.W, H=m.H, isG=m.type==='gazebo';
+  const bm=(a,b,w,t,layer)=>B.push({a,b,w,t,layer});
+  const panel=(p1,p2,p3,p4,layer)=>{ // делим на плитки ~0.7 м для корректной сортировки по глубине
+    const d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+    const n=Math.max(1,Math.ceil(d(p1,p2)/0.7)),k=Math.max(1,Math.ceil(d(p1,p4)/0.7));
+    const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+    for(let i=0;i<n;i++)for(let j=0;j<k;j++){const u0=i/n,u1=(i+1)/n,v0=j/k,v1=(j+1)/k;
+      const q=(u,v)=>lerp(lerp(p1,p2,u),lerp(p4,p3,u),v);
+      B.push({quad:[q(u0,v0),q(u1,v0),q(u1,v1),q(u0,v1)],layer});}
+  };
+  const ang=m.pitch*Math.PI/180, half=W/2, rise=half*Math.tan(ang), o=m.ovs, oRise=o*Math.tan(ang);
+  [[0,0,L,0],[L,0,L,W],[L,W,0,W],[0,W,0,0]].forEach(([x1,z1,x2,z2])=>bm([x1,-0.19,z1],[x2,-0.19,z2],0.135,0.19,'rost'));
+  const nb=Math.max(1,Math.round(L/0.6));
+  for(let i=0;i<=nb;i++){const x=L*i/nb;bm([x,0,0],[x,0,W],0.045,0.19,'floor');}
+  bm([0,0,0],[L,0,0],0.045,0.19,'floor');bm([0,0,W],[L,0,W],0.045,0.19,'floor');
+  // платформа — фанера
+  panel([0,0.11,0],[L,0.11,0],[L,0.11,W],[0,0.11,W],'plat');
+  if(!isG){
+    const sec=m.ins===250?0.24:m.ins===200?0.19:0.14, y0=0.135, top=y0+H, rb=top+0.2;
+    const wall=(x1,z1,x2,z2,open)=>{
+      const len=Math.hypot(x2-x1,z2-z1),n=Math.max(1,Math.round(len/0.6)),dx=(x2-x1)/len,dz=(z2-z1)/len;
+      const sw=Math.abs(dx)>0.5?0.045:sec, st=Math.abs(dx)>0.5?sec:0.045;
+      bm([x1,y0,z1],[x2,y0,z2],sec,0.045,'walls');bm([x1,top-0.09,z1],[x2,top-0.09,z2],sec,0.045,'walls');bm([x1,top-0.045,z1],[x2,top-0.045,z2],sec,0.045,'walls');
+      for(let i=0;i<=n;i++){const t=i/n,x=x1+(x2-x1)*t,z=z1+(z2-z1)*t;let skip=false;open.forEach(([p,w])=>{if(Math.abs(t*len-p)<w/2)skip=true;});if(!skip)bm([x,y0,z],[x,top,z],sw,st,'walls');}
+      open.forEach(([p,w,yb,yt])=>{const cx=x1+dx*p,cz=z1+dz*p;
+        bm([cx-dx*w/2,y0,cz-dz*w/2],[cx-dx*w/2,top,cz-dz*w/2],sw,st,'open');bm([cx+dx*w/2,y0,cz+dz*w/2],[cx+dx*w/2,top,cz+dz*w/2],sw,st,'open');
+        bm([cx-dx*w/2,y0+yt,cz-dz*w/2],[cx+dx*w/2,y0+yt,cz+dz*w/2],sec,0.09,'open');if(yb>0)bm([cx-dx*w/2,y0+yb,cz-dz*w/2],[cx+dx*w/2,y0+yb,cz+dz*w/2],sec,0.045,'open');});
+      // панели: утеплитель (в плоскости стены), ОСБ и фасад снаружи. Наружу = влево от направления стены (нормаль -dz,dx)... стены обходим по часовой, наружная нормаль = (dz,0,-dx)
+      const nx=dz, nz=-dx;
+      const sheet=(off,layer,withOpen)=>{
+        const pts=(a,b,yb,yt)=>panel([x1+dx*a+nx*off,y0+yb,z1+dz*a+nz*off],[x1+dx*b+nx*off,y0+yb,z1+dz*b+nz*off],[x1+dx*b+nx*off,y0+yt,z1+dz*b+nz*off],[x1+dx*a+nx*off,y0+yt,z1+dz*a+nz*off],layer);
+        let cur=0;const ops=[...open].sort((a,b)=>a[0]-b[0]);
+        ops.forEach(([p,w,yb,yt])=>{pts(cur,p-w/2,0,H);pts(p-w/2,p+w/2,0,yb);pts(p-w/2,p+w/2,yt,H);cur=p+w/2;});
+        pts(cur,len,0,H);
+      };
+      sheet(-0.004,'ins');sheet(sec/2+0.03,'osb');sheet(sec/2+0.09,'fac');
+    };
+    const nw=Math.max(1,Math.round(L/3.5)), wins=[];for(let i=0;i<nw;i++)wins.push([L*(i+0.5)/nw,1.2,0.9,2.3]);
+    wall(0,0,L,0,wins);wall(L,0,L,W,W>3?[[W/2,1.2,0.9,2.3]]:[]);wall(L,W,0,W,wins);wall(0,W,0,0,[[W/2,0.9,0,2.1]]);
+    if(L>=4.5){const n=Math.max(1,Math.round(W/0.6));for(let i=0;i<=n;i++)bm([L/2,y0,W*i/n],[L/2,top,W*i/n],0.09,0.045,'walls');bm([L/2,top-0.045,0],[L/2,top-0.045,W],0.09,0.045,'walls');}
+    // потолочные балки
+    for(let i=0;i<=nb;i++){const x=L*i/nb;bm([x,top+0.1,0.25],[x,top+0.1,W-0.25],0.045,0.19,'ceil');}
+    panel([0.1,top+0.21,0.25],[L-0.1,top+0.21,0.25],[L-0.1,top+0.21,W-0.25],[0.1,top+0.21,W-0.25],'ins');
+    // стропила
+    const nr=Math.max(1,Math.round(L/0.6));
+    for(let i=0;i<=nr;i++){const x=L*i/nr;bm([x,rb-oRise,-o],[x,rb+rise,half],0.045,0.19,'raft');bm([x,rb+rise,half],[x,rb-oRise,W+o],0.045,0.19,'raft');}
+    bm([-o,rb+rise-0.1,half],[L+o,rb+rise-0.1,half],0.09,0.30,'raft');
+    const rl=Math.hypot(half+o,rise+oRise);
+    for(let d=0.2;d<rl;d+=0.35){const t=d/rl,y=(rb-oRise)+(rise+oRise)*t+0.1,z=-o+(half+o)*t;bm([-o,y,z],[L+o,y,z],0.09,0.02,'bat');bm([-o,y,W-z],[L+o,y,W-z],0.09,0.02,'bat');}
+    // кровельные панели (обшивка крыши) + фронтоны
+    panel([-o,rb-oRise+0.14,-o],[L+o,rb-oRise+0.14,-o],[L+o,rb+rise+0.14,half],[-o,rb+rise+0.14,half],'osb');
+    panel([-o,rb-oRise+0.14,W+o],[L+o,rb-oRise+0.14,W+o],[L+o,rb+rise+0.14,half],[-o,rb+rise+0.14,half],'osb');
+    panel([-o,rb-oRise+0.2,-o],[L+o,rb-oRise+0.2,-o],[L+o,rb+rise+0.2,half],[-o,rb+rise+0.2,half],'fac');panel([-o,rb-oRise+0.2,W+o],[L+o,rb-oRise+0.2,W+o],[L+o,rb+rise+0.2,half],[-o,rb+rise+0.2,half],'fac');
+    [[-0.03,'osb'],[-0.09,'fac'],[L+0.03,'osb'],[L+0.09,'fac']].forEach(([x,l])=>panel([x,top,0],[x,top,W],[x,rb+rise,half],[x,rb+rise,half],l));
+    if(m.type==='barnhouse'){const tw=2.5;
+      bm([L,-0.1,0],[L+tw,-0.1,0],0.19,0.045,'ter');bm([L,-0.1,W],[L+tw,-0.1,W],0.19,0.045,'ter');
+      for(let z=0.07;z<W;z+=0.15)bm([L,0.02,z],[L+tw,0.02,z],0.14,0.032,'ter');
+      [0,half,W].forEach(z=>bm([L+tw,0,z],[L+tw,rb-oRise,z],0.14,0.14,'ter'));
+      for(let i=1;i<=4;i++){const x=L+tw*i/4;bm([x,rb-oRise,-o],[x,rb+rise,half],0.045,0.19,'ter');bm([x,rb+rise,half],[x,rb-oRise,W+o],0.045,0.19,'ter');}
+      bm([L,rb+rise-0.1,half],[L+tw+o,rb+rise-0.1,half],0.09,0.30,'ter');}
+  } else {
+    const n=Math.max(1,Math.round(L/2)),k=Math.max(1,Math.round(W/2)),y0=0.12,top=y0+H;
+    for(let i=0;i<=n;i++)for(const z of [0,W])bm([L*i/n,y0,z],[L*i/n,top,z],0.14,0.14,'walls');
+    for(let j=1;j<k;j++)for(const x of [0,L])bm([x,y0,W*j/k],[x,top,W*j/k],0.14,0.14,'walls');
+    [[0,0,L,0],[L,0,L,W],[L,W,0,W],[0,W,0,0]].forEach(([x1,z1,x2,z2])=>{bm([x1,top,z1],[x2,top,z2],0.09,0.14,'walls');bm([x1,1.0,z1],[x2,1.0,z2],0.045,0.09,'open');});
+    const nr=Math.max(1,Math.round(L/0.6));
+    for(let i=0;i<=nr;i++){const x=L*i/nr;bm([x,top-oRise,-o],[x,top+rise,half],0.045,0.19,'raft');bm([x,top+rise,half],[x,top-oRise,W+o],0.045,0.19,'raft');}
+    bm([-o,top+rise-0.1,half],[L+o,top+rise-0.1,half],0.09,0.19,'raft');
+    const rl=Math.hypot(half+o,rise+oRise);
+    for(let d=0.2;d<rl;d+=0.35){const t=d/rl,y=(top-oRise)+(rise+oRise)*t+0.1,z=-o+(half+o)*t;bm([-o,y,z],[L+o,y,z],0.05,0.04,'bat');bm([-o,y,W-z],[L+o,y,W-z],0.05,0.04,'bat');}
+    panel([-o,top-oRise+0.14,-o],[L+o,top-oRise+0.14,-o],[L+o,top+rise+0.14,half],[-o,top+rise+0.14,half],'osb');
+    panel([-o,top-oRise+0.14,W+o],[L+o,top-oRise+0.14,W+o],[L+o,top+rise+0.14,half],[-o,top+rise+0.14,half],'osb');
+  }
+  return B;
+}
+function faces(b){
+  const [ax,ay,az]=b.a,[bx,by,bz]=b.b;
+  let dx=bx-ax,dy=by-ay,dz=bz-az;const len=Math.hypot(dx,dy,dz)||1;dx/=len;dy/=len;dz/=len;
+  let u,v;
+  if(Math.abs(dy)>0.9){u=[1,0,0];v=[0,0,1];}else{u=[-dz,0,dx];const ul=Math.hypot(u[0],u[2])||1;u=[u[0]/ul,0,u[2]/ul];v=[dy*u[2],dz*u[0]-dx*u[2],-dy*u[0]];const vl=Math.hypot(...v)||1;v=v.map(c=>c/vl);if(v[1]<0)v=v.map(c=>-c);}
+  const hw=b.w/2,ht=b.t/2,P=[];
+  for(const [s,e] of [[-1,-1],[1,-1],[1,1],[-1,1]])P.push([ax+u[0]*hw*s+v[0]*ht*e,ay+u[1]*hw*s+v[1]*ht*e,az+u[2]*hw*s+v[2]*ht*e]);
+  const Q=P.map(p=>[p[0]+dx*len,p[1]+dy*len,p[2]+dz*len]);
+  return [[P[0],P[1],P[2],P[3]],[Q[0],Q[1],Q[2],Q[3]],[P[0],P[1],Q[1],Q[0]],[P[1],P[2],Q[2],Q[1]],[P[2],P[3],Q[3],Q[2]],[P[3],P[0],Q[0],Q[3]]];
+}
+function proj(p,m,lift){
+  const cx=m.L/2+(m.type==='barnhouse'?1.2:0), cy=m.H/2+0.5+explode*7, cz=m.W/2;
+  let x=p[0]-cx,y=p[1]+(lift||0)-cy,z=p[2]-cz;
+  let x1=x*Math.cos(rotY)-z*Math.sin(rotY), z1=x*Math.sin(rotY)+z*Math.cos(rotY);
+  let y1=y*Math.cos(rotX)-z1*Math.sin(rotX), z2=y*Math.sin(rotX)+z1*Math.cos(rotX);
+  const f=Math.min(C.width,C.height)/(Math.max(m.L+(m.type==='barnhouse'?2.5:0),m.W)*1.25+explode*9)*zoom;
+  const d=34, s=d/(d+z2);
+  return [C.width/2+x1*f*s, C.height/2-y1*f*s, z2, [x1,y1,z2]];
+}
+function draw3d(){
+  const m=model; if(!m.L) return;
+  ctx.clearRect(0,0,C.width,C.height);
+  const css=getComputedStyle(document.documentElement);ctx.strokeStyle=css.getPropertyValue('--grid').trim()||'#1c261f';ctx.lineWidth=1;
+  for(let i=-3;i<=m.L+5;i+=1){const a=proj([i,-0.3,-3],m),b=proj([i,-0.3,m.W+3],m);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
+  for(let j=-3;j<=m.W+3;j+=1){const a=proj([-3,-0.3,j],m),b=proj([m.L+5,-0.3,j],m);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
+  const light=[0.4,0.8,0.45];const ll=Math.hypot(...light);light.forEach((c,i)=>light[i]=c/ll);
+  const polys=[];
+  const push=(f,col,lift,alpha,isPanel)=>{
+    const pp=f.map(p=>proj(p,m,lift));
+    const A=pp[0][3],Bq=pp[1][3],Cq=pp[2][3];
+    const e1=[Bq[0]-A[0],Bq[1]-A[1],Bq[2]-A[2]],e2=[Cq[0]-A[0],Cq[1]-A[1],Cq[2]-A[2]];
+    let n=[e1[1]*e2[2]-e1[2]*e2[1],e1[2]*e2[0]-e1[0]*e2[2],e1[0]*e2[1]-e1[1]*e2[0]];const nl=Math.hypot(...n)||1;n=n.map(c=>c/nl);
+    const lam=Math.abs(n[0]*light[0]+n[1]*light[1]-n[2]*light[2]),sh=0.45+0.55*lam;
+    const z=(pp[0][2]+pp[1][2]+pp[2][2]+pp[3][2])/4+(isPanel?-0.02:0);
+    polys.push({pp,z,a:alpha,c:`rgb(${col[0]*sh|0},${col[1]*sh|0},${col[2]*sh|0})`});
+  };
+  beams(m).filter(b=>on[b.layer]).forEach(b=>{
+    const col=WOOD[b.layer], lift=explode*ORDER[b.layer]*1.4;
+    if(b.quad){push(b.quad,col,lift,b.layer==='ins'?0.85:1,true);}
+    else faces(b).forEach(f=>push(f,col,lift,1));
+  });
+  polys.sort((p,q)=>q.z-p.z);
+  polys.forEach(p=>{ctx.globalAlpha=p.a;ctx.fillStyle=p.c;ctx.strokeStyle='rgba(40,25,10,0.35)';ctx.lineWidth=0.6;ctx.beginPath();ctx.moveTo(p.pp[0][0],p.pp[0][1]);for(let i=1;i<4;i++)ctx.lineTo(p.pp[i][0],p.pp[i][1]);ctx.closePath();ctx.fill();ctx.stroke();});
+  ctx.globalAlpha=1;ctx.fillStyle=css.getPropertyValue('--c3txt').trim()||'#9fb09c';ctx.font='13px sans-serif';
+  ctx.fillText(`${TYPES[type].name} · ${m.L}×${m.W} м · стена ${m.H} м · крыша ${m.pitch}°`,14,24);
+}
+C.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];C.setPointerCapture(e.pointerId);});
+C.addEventListener('pointermove',e=>{if(!drag)return;rotY+=(e.clientX-drag[0])*0.01;rotX=Math.max(-1.5,Math.min(1.55,rotX+(e.clientY-drag[1])*0.01));drag=[e.clientX,e.clientY];draw3d();});
+C.addEventListener('pointerup',()=>drag=null);
+C.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.5,Math.min(2.5,zoom*(e.deltaY<0?1.1:0.9)));draw3d();},{passive:false});
+const EX=document.getElementById('explode');
+EX.addEventListener('input',()=>{explode=+EX.value;draw3d();});
+document.getElementById('explodeBtn').onclick=()=>{const target=explode>0.5?0:1;const t0=performance.now(),from=explode;(function st(now){const k=Math.min(1,(now-t0)/600);explode=from+(target-from)*(1-Math.pow(1-k,3));EX.value=explode;draw3d();if(k<1)requestAnimationFrame(st);})(t0);};
+const TB=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);TB.textContent=t==='dark'?'☀️ Светлая':'🌙 Тёмная';draw3d();}
+TB.onclick=()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+TB.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️ Светлая':'🌙 Тёмная';
+document.getElementById('allBtn').onclick=()=>{const all=Object.values(on).every(v=>v);Object.keys(on).forEach(k=>on[k]=all?0:1);if(all){on.rost=on.floor=on.plat=on.walls=on.open=on.raft=1;}buildLayers();draw3d();};
+buildLayers();
+const _render=render; render=function(){_render();draw3d();}; render();
+
+</script>
+</body>
+</html>
