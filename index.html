@@ -6,7 +6,7 @@
 <title>Конструктор каркасного дома — расчёт материалов</title>
 <meta name="description" content="Онлайн-конструктор каркасного дома, бани, хозблока и беседки: размеры, утепление, ведомость материалов и смета.">
 <style>
-:root{--bg:#f3f1ea;--card:#ffffff;--line:#e2ddd0;--acc:#b8761c;--acc2:#4e8a3a;--txt:#1d1a14;--mut:#6b675c;--inp:#faf8f2;--chip:#f6f3ec;--grp:#f1ead9;--c3bg1:#dfe8ee;--c3bg2:#eef1e8;--grid:#cfd6cc;--c3txt:#4a5a4f;--hdr1:#ffffff;--hdr2:#f3f1ea}
+:root{--bg:#f3f1ea;--card:#ffffff;--line:#e2ddd0;--acc:#b8761c;--acc2:#4e8a3a;--txt:#1d1a14;--mut:#6b675c;--inp:#faf8f2;--chip:#f6f3ec;--grp:#f1ead9;--c3bg1:#ffffff;--c3bg2:#ffffff;--grid:#e6e3da;--c3txt:#4a5a4f;--hdr1:#ffffff;--hdr2:#f3f1ea}
 [data-theme="dark"]{--bg:#0f1512;--card:#172019;--line:#2a372c;--acc:#d9a441;--acc2:#8fbf6a;--txt:#e8efe6;--mut:#9fb09c;--inp:#0e1410;--chip:#131a14;--grp:#1d261c;--c3bg1:#1a2430;--c3bg2:#0b0f0c;--grid:#1c261f;--c3txt:#9fb09c;--hdr1:#1b241b;--hdr2:#0f1512}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--txt)}
@@ -326,6 +326,7 @@ function render(){
   drawPlan(m); drawElev(m);
   chips.innerHTML=`<span class="chip">Стены ${m.per.toFixed(1)} м периметра</span><span class="chip">Утеплитель ${m.ins||'—'} мм</span><span class="chip">Уклон ${m.pitch}°</span><span class="chip">Свес ${m.ovs} м</span><span class="chip">Площадь ${m.area.toFixed(1)} м²</span>`;
   model_json=JSON.stringify(m);
+  if(typeof draw3d==='function')draw3d();
 }
 function drawPlan(m){
   const pad=40, sc=Math.min((400-pad*2)/m.L,(300-pad*2)/m.W);
@@ -540,10 +541,14 @@ function draw3d(){
   ctx.globalAlpha=1;ctx.fillStyle=css.getPropertyValue('--c3txt').trim()||'#9fb09c';ctx.font='13px sans-serif';
   ctx.fillText(`${TYPES[type].name} · ${m.L}×${m.W} м · стена ${m.H} м · крыша ${m.pitch}°`,14,24);
 }
-C.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];C.setPointerCapture(e.pointerId);});
-C.addEventListener('pointermove',e=>{if(!drag)return;rotY+=(e.clientX-drag[0])*0.01;rotX=Math.max(-1.5,Math.min(1.55,rotX+(e.clientY-drag[1])*0.01));drag=[e.clientX,e.clientY];draw3d();});
-C.addEventListener('pointerup',()=>drag=null);
-C.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.5,Math.min(2.5,zoom*(e.deltaY<0?1.1:0.9)));draw3d();},{passive:false});
+C.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];vY=vX=0;C.setPointerCapture(e.pointerId);});
+let vY=0,vX=0,raf=0,lastT=0;
+function req(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;draw3d();});}
+C.addEventListener('pointermove',e=>{if(!drag)return;const dx=(e.clientX-drag[0])*0.008,dy=(e.clientY-drag[1])*0.008;rotY+=dx;rotX=Math.max(-1.5,Math.min(1.55,rotX+dy));vY=dx;vX=dy;drag=[e.clientX,e.clientY];req();});
+function inertia(){if(drag)return;vY*=0.9;vX*=0.9;if(Math.abs(vY)<0.0005&&Math.abs(vX)<0.0005)return;rotY+=vY;rotX=Math.max(-1.5,Math.min(1.55,rotX+vX));draw3d();requestAnimationFrame(inertia);}
+C.addEventListener('pointerup',()=>{drag=null;requestAnimationFrame(inertia);});
+C.addEventListener('pointercancel',()=>{drag=null;});
+C.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.5,Math.min(2.5,zoom*(e.deltaY<0?1.1:0.9)));req();},{passive:false});
 const EX=document.getElementById('explode');
 EX.addEventListener('input',()=>{explode=+EX.value;draw3d();});
 document.getElementById('explodeBtn').onclick=()=>{const target=explode>0.5?0:1;const t0=performance.now(),from=explode;(function st(now){const k=Math.min(1,(now-t0)/600);explode=from+(target-from)*(1-Math.pow(1-k,3));EX.value=explode;draw3d();if(k<1)requestAnimationFrame(st);})(t0);};
